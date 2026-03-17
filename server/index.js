@@ -1,5 +1,6 @@
 const express = require("express")
 const dotenv = require("dotenv")
+const connectDB = require("./config/db")
 
 /*
 this is the moment dotenv reads your .env file and loads everything inside into
@@ -7,7 +8,8 @@ this is the moment dotenv reads your .env file and loads everything inside into
 So if your .env has a variable called as PORT then after the following line 
 process.env.PORT exists and it does not before that
 */
-dotenv.config()  
+dotenv.config() 
+connectDB() 
 
 
 const app = express()
