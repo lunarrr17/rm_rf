@@ -8,7 +8,7 @@ const register = async (req , res) => {
     try{
 
         if(!username || !email || !password) {
-            res.status(400).json({ message: "Username , password and email are mandatory fields!" })
+            return res.status(400).json({ message: "Username , password and email are mandatory fields!" })
         }
 
         const existingUser = await User.findOne({
@@ -52,4 +52,42 @@ const register = async (req , res) => {
     }
 }
 
-module.exports = { register }
+
+const signin = async (req , res) => {
+    const { email , password } = req.body;
+    try{
+        if(!email || !password) {
+            return res.status(400).json({ message: "Invalid Credentials" })
+        }
+
+        existingEmail = await User.findOne({ email })
+        
+
+        if(!existingEmail) {
+            return res.status(400).json({ message: "Invalid Credentials" })
+        }
+
+        hashedPassword = existingEmail.password
+        const passwordsMatch = await bcrypt.compare(password , hashedPassword)
+
+        if(!passwordsMatch)  {
+            return res.status(400).json({ message: "Invalid Credentials" })
+        }
+
+        return res.status(200).json({ 
+            message: "Login Successfull",
+            user: {
+                id: existingEmail._id,
+                username: existingEmail.username,
+                email: existingEmail.email,
+                role: existingEmail.role,
+                verified: existingEmail.isVerified
+            }
+         })
+    }
+    catch(error) {
+        return res.status(500).json({ message: "Server Error" , error: error.message })
+    }
+}
+
+module.exports = { register , signin }
