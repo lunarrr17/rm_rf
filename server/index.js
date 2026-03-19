@@ -14,6 +14,9 @@ connectDB()
 
 const app = express()
 app.use(express.json()) //is a built in middleware that automatically parses the raw text into a proper JSON object
+const authRoutes = require('./routes/auth.routes')
+app.use('/api/v1/auth', authRoutes)
+
 
 const PORT = process.env.PORT || 5000
 
