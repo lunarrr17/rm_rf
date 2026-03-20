@@ -1,6 +1,6 @@
 const User = require("../models/User")
 const bcrypt = require("bcryptjs")
-
+const generateToken = require("../utils/generateTokens")
 
 // this is the authentication controller that works when a new user tries to signuo on our platform
 const register = async (req , res) => {
@@ -60,21 +60,33 @@ const signin = async (req , res) => {
             return res.status(400).json({ message: "Invalid Credentials" })
         }
 
-        existingEmail = await User.findOne({ email })
+        const existingEmail = await User.findOne({ email })
         
 
         if(!existingEmail) {
             return res.status(400).json({ message: "Invalid Credentials" })
         }
 
-        hashedPassword = existingEmail.password
+        const hashedPassword = existingEmail.password
         const passwordsMatch = await bcrypt.compare(password , hashedPassword)
 
         if(!passwordsMatch)  {
             return res.status(400).json({ message: "Invalid Credentials" })
         }
 
-        return res.status(200).json({ 
+
+
+        const { accessToken , refreshToken } = generateToken(existingEmail)
+
+        // res.setHeader("Authorization" , "Bearer " + accessToken)
+        res.cookie("refreshToken" , refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
+        return res.status(201).json({ 
             message: "Login Successfull",
             user: {
                 id: existingEmail._id,
@@ -82,7 +94,8 @@ const signin = async (req , res) => {
                 email: existingEmail.email,
                 role: existingEmail.role,
                 verified: existingEmail.isVerified
-            }
+            },
+            accessToken: accessToken
          })
     }
     catch(error) {
